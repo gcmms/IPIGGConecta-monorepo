@@ -1,0 +1,20 @@
+CREATE DATABASE IF NOT EXISTS ipiggconect
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE ipiggconect;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  birth_date DATE NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  phone VARCHAR(20),
+  role ENUM('Membro', 'Administrador') NOT NULL DEFAULT 'Membro',
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY users_email_unique (email)
+);
