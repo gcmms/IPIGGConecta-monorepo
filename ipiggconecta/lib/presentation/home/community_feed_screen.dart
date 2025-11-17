@@ -215,51 +215,15 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
               final comments = snapshot.data ?? [];
               return Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextField(
-                    controller: commentController,
-                    decoration: const InputDecoration(
-                      hintText: 'Escreva um comentário...',
+                  const Text(
+                    'Comentários',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F1F1F),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final text = commentController.text.trim();
-                      if (text.isEmpty) {
-                        _showMessage('Digite um comentário.');
-                        return;
-                      }
-                      try {
-                        final updatedComments = await _service.addComment(
-                          postId: post.id,
-                          userId: _currentUser!.id,
-                          comment: text,
-                        );
-                        commentController.clear();
-                        setState(() {
-                          _posts = _posts.map((item) {
-                            if (item.id == post.id) {
-                              return item.copyWith(
-                                commentsCount: updatedComments.length,
-                              );
-                            }
-                            return item;
-                          }).toList();
-                          _future = Future.value(_posts);
-                        });
-                        if (mounted) {
-                          Navigator.pop(context);
-                        }
-                        _showMessage('Comentário enviado!');
-                      } catch (error) {
-                        _showMessage(error.toString());
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0D70F1),
-                    ),
-                    child: const Text('Enviar'),
                   ),
                   const SizedBox(height: 16),
                   if (snapshot.connectionState == ConnectionState.waiting)
@@ -269,27 +233,136 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                     )
                   else
                     SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        itemCount: comments.length,
-                        itemBuilder: (context, index) {
-                          final comment = comments[index];
-                          return ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(
-                              comment.authorName,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                      height: 220,
+                      child: comments.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'Nenhum comentário ainda.',
+                                style: TextStyle(
+                                  color: Color(0xFF8E94A3),
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
+                              itemCount: comments.length,
+                              separatorBuilder: (_, __) =>
+                                  const Divider(color: Color(0xFFE5E6EC)),
+                              itemBuilder: (context, index) {
+                                final comment = comments[index];
+                                return ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: Container(
+                                    height: 40,
+                                    width: 40,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFFFE1C4),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.person_outline,
+                                      color: Color(0xFFFF9F43),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    comment.authorName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF2F2F2F),
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    comment.comment,
+                                    style: const TextStyle(
+                                      color: Color(0xFF60667A),
+                                    ),
+                                  ),
+                                  trailing: Text(
+                                    comment.relativeTime,
+                                    style: const TextStyle(
+                                      color: Color(0xFF9AA1B2),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            subtitle: Text(comment.comment),
-                            trailing: Text(
-                              comment.relativeTime,
-                              style: const TextStyle(color: Colors.black54),
-                            ),
-                          );
-                        },
+                    ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: commentController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: 'Escreva um comentário...',
+                      filled: true,
+                      fillColor: const Color(0xFFF6F7FB),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(color: Color(0xFFE2E5EE)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(color: Color(0xFFE2E5EE)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFFF9F43), width: 1.5),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final text = commentController.text.trim();
+                        if (text.isEmpty) {
+                          _showMessage('Digite um comentário.');
+                          return;
+                        }
+                        try {
+                          final updatedComments = await _service.addComment(
+                            postId: post.id,
+                            userId: _currentUser!.id,
+                            comment: text,
+                          );
+                          commentController.clear();
+                          setState(() {
+                            _posts = _posts.map((item) {
+                              if (item.id == post.id) {
+                                return item.copyWith(
+                                  commentsCount: updatedComments.length,
+                                );
+                              }
+                              return item;
+                            }).toList();
+                            _future = Future.value(_posts);
+                          });
+                          if (mounted) {
+                            Navigator.pop(context);
+                          }
+                          _showMessage('Comentário enviado!');
+                        } catch (error) {
+                          _showMessage(error.toString());
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF9F43),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        elevation: 3,
+                        shadowColor: const Color(0xFFFF9F43).withOpacity(0.4),
+                      ),
+                      child: const Text('Enviar'),
+                    ),
+                  ),
                 ],
               );
             },
